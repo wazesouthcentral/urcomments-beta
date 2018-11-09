@@ -4,7 +4,7 @@
 // @namespace       https://greasyfork.org/en/scripts/374178-wme-urcomments-usa-southcentral-beta
 // @grant           none
 // @grant           GM_info
-// @version         2018.11.09.02
+// @version         2018.11.09.03
 // @match           https://editor-beta.waze.com/*editor*
 // @match           https://beta.waze.com/*editor*
 // @match           https://www.waze.com/*editor*
@@ -28,6 +28,7 @@
  * 2018.11.06.03 - Updated Add Toll Pass to App verbage per karlcr9911's recommendations. Removed "Tolls - No User Transponder". Updated "Tolls - No User Transponder (avoid tolls)" to just be "Tolls - Avoid Tolls". - dB
  * 2018.11.09.01 - Rewrote to pull canned messages from Google sheets. - dB
  * 2018.11.09.02 - Updated namespace. - dB
+ * 2018.11.09.03 - Set static vars / arrays before async. - dB
  */
 
 var URCommentUSA_SouthCentralVersion = GM_info.script.version;
@@ -50,7 +51,7 @@ function logWarning(message) { console.warn('SCR URC: ', message); }
 var parsedResults = [];
 let reminderMsgIdx, closedNotIdentifiedIdx;
 
-function setURCcommentsVars() {
+function setURCcommentsStaticVars() {
     //Custom Configuration: this allows your "reminder", and close as "not identified" messages to be named what ever you would like.
     //the position in the list that the reminder message is at. (starting at 0 counting titles, comments, and ur status). in my list this is "4 day Follow-Up"
     //window.UrcommentsUSA_SouthCentralReminderPosistion = 30;
@@ -238,6 +239,8 @@ function setURCcommentsVars() {
     window.UrcommentsUSA_SouthCentralURC_USER_PROMPT[10] = "URComments: Can not find the comment box! In order for this script to work you need to have a UR open."; //this message is shown across the top of the map in a orange box, length must be kept short
 
     window.UrcommentsUSA_SouthCentralURC_USER_PROMPT[11] = "URComments - This will send reminders at the reminder days setting. This only happens when they are in your visible area. NOTE: when using this feature you should not leave any UR open unless you had a question that needed an answer from the wazer as this script will send those reminders."; //conformation message/ question
+}
+function setURCcommentsVars() {
     window.UrcommentsUSA_SouthCentralArray2 = parsedResults;
     window.UrcommentsUSA_SouthCentralReminderPosistion = reminderMsgIdx;
     window.UrcommentsUSA_SouthCentralCloseNotIdentifiedPosistion = closedNotIdentifiedIdx;
@@ -271,8 +274,6 @@ function loadCommentsSpreadsheetAsync() {
                         }
                     }
                 }
-                log(parsedResults);
-                log(reminderMsgIdx);
                 resolve(result);
             },
             error: function() {
@@ -284,6 +285,7 @@ function loadCommentsSpreadsheetAsync() {
 
 function init() {
     let t0 = performance.now();
+    setURCcommentsStaticVars();
     loadCommentsSpreadsheetAsync().then(result => {
         if (result.error) {
             logError(result.error);
