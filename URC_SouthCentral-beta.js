@@ -4,7 +4,7 @@
 // @namespace       https://greasyfork.org/en/scripts/374178-wme-urcomments-usa-southcentral-beta
 // @grant           none
 // @grant           GM_info
-// @version         2018.11.09.03
+// @version         2018.11.09.04
 // @match           https://editor-beta.waze.com/*editor*
 // @match           https://beta.waze.com/*editor*
 // @match           https://www.waze.com/*editor*
@@ -29,6 +29,7 @@
  * 2018.11.09.01 - Rewrote to pull canned messages from Google sheets. - dB
  * 2018.11.09.02 - Updated namespace. - dB
  * 2018.11.09.03 - Set static vars / arrays before async. - dB
+ * 2018.11.09.04 - Additional logging. - dB
  */
 
 var URCommentUSA_SouthCentralVersion = GM_info.script.version;
@@ -52,6 +53,7 @@ var parsedResults = [];
 let reminderMsgIdx, closedNotIdentifiedIdx;
 
 function setURCcommentsStaticVars() {
+    log("Setting static vars");
     //Custom Configuration: this allows your "reminder", and close as "not identified" messages to be named what ever you would like.
     //the position in the list that the reminder message is at. (starting at 0 counting titles, comments, and ur status). in my list this is "4 day Follow-Up"
     //window.UrcommentsUSA_SouthCentralReminderPosistion = 30;
@@ -240,13 +242,15 @@ function setURCcommentsStaticVars() {
 
     window.UrcommentsUSA_SouthCentralURC_USER_PROMPT[11] = "URComments - This will send reminders at the reminder days setting. This only happens when they are in your visible area. NOTE: when using this feature you should not leave any UR open unless you had a question that needed an answer from the wazer as this script will send those reminders."; //conformation message/ question
 }
-function setURCcommentsVars() {
+function setURCcommentsVars(parsedResults, reminderMsgIdx, closedNotIdentifiedIdx) {
+    log("Setting variable vars and arrays");
     window.UrcommentsUSA_SouthCentralArray2 = parsedResults;
     window.UrcommentsUSA_SouthCentralReminderPosistion = reminderMsgIdx;
     window.UrcommentsUSA_SouthCentralCloseNotIdentifiedPosistion = closedNotIdentifiedIdx;
 }
 
 function loadCommentsSpreadsheetAsync() {
+    log("Running Async");
     return new Promise((resolve, reject) => {
         $.get({
             url: 'https://spreadsheets.google.com/feeds/list/1O9zX369rcAqpn0B_n8jxDRUX76Q0thuKszcEsU1fKBM/5/public/values?alt=json',
@@ -274,6 +278,7 @@ function loadCommentsSpreadsheetAsync() {
                         }
                     }
                 }
+                log("Finished Async");
                 resolve(result);
             },
             error: function() {
@@ -293,7 +298,7 @@ function init() {
             return;
         }
         logDebug('Loaded ' + parsedResults.length/3 + ' messages and headers in ' + Math.round(performance.now() - t0) + ' ms.');
-        setURCcommentsVars();
+        setURCcommentsVars(parsedResults, reminderMsgIdx, closedNotIdentifiedIdx);
         log('Initialized.');
     }).catch(err => {
         let msg;
