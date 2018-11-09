@@ -4,7 +4,7 @@
 // @namespace       https://greasyfork.org/en/scripts/374178-wme-urcomments-usa-southcentral-beta
 // @grant           none
 // @grant           GM_info
-// @version         2018.11.09.04
+// @version         2018.11.09.05
 // @match           https://editor-beta.waze.com/*editor*
 // @match           https://beta.waze.com/*editor*
 // @match           https://www.waze.com/*editor*
@@ -30,6 +30,7 @@
  * 2018.11.09.02 - Updated namespace. - dB
  * 2018.11.09.03 - Set static vars / arrays before async. - dB
  * 2018.11.09.04 - Additional logging. - dB
+ * 2018.11.09.05 - let to var. - dB
  */
 
 var URCommentUSA_SouthCentralVersion = GM_info.script.version;
@@ -50,7 +51,7 @@ function logDebug(message) { if (DEBUG) console.debug('SCR URC: ', message); }
 function logWarning(message) { console.warn('SCR URC: ', message); }
 
 var parsedResults = [];
-let reminderMsgIdx, closedNotIdentifiedIdx;
+var reminderMsgIdx, closedNotIdentifiedIdx;
 
 function setURCcommentsStaticVars() {
     log("Setting static vars");
