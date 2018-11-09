@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name            WME URComments USA_SouthCentral - Beta
 // @description     This script is for South Central editors for standard comments to be used with the script URComments
-// @namespace       https://greasyfork.org/en/scripts/
+// @namespace       https://greasyfork.org/en/scripts/374178-wme-urcomments-usa-southcentral-beta
 // @grant           none
 // @grant           GM_info
-// @version         2018.11.09.01
+// @version         2018.11.09.02
 // @match           https://editor-beta.waze.com/*editor*
 // @match           https://beta.waze.com/*editor*
 // @match           https://www.waze.com/*editor*
@@ -27,6 +27,7 @@
  * 2018.11.06.02 - Didn't escape quotations. My fault. :( - dB
  * 2018.11.06.03 - Updated Add Toll Pass to App verbage per karlcr9911's recommendations. Removed "Tolls - No User Transponder". Updated "Tolls - No User Transponder (avoid tolls)" to just be "Tolls - Avoid Tolls". - dB
  * 2018.11.09.01 - Rewrote to pull canned messages from Google sheets. - dB
+ * 2018.11.09.02 - Updated namespace. - dB
  */
 
 var URCommentUSA_SouthCentralVersion = GM_info.script.version;
