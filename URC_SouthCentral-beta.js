@@ -4,7 +4,7 @@
 // @namespace       https://greasyfork.org/en/scripts/374178-wme-urcomments-usa-southcentral-beta
 // @grant           none
 // @grant           GM_info
-// @version         2018.11.09.05
+// @version         2018.11.14.01
 // @match           https://editor-beta.waze.com/*editor*
 // @match           https://beta.waze.com/*editor*
 // @match           https://www.waze.com/*editor*
@@ -31,7 +31,10 @@
  * 2018.11.09.03 - Set static vars / arrays before async. - dB
  * 2018.11.09.04 - Additional logging. - dB
  * 2018.11.09.05 - let to var. - dB
+ * 2018.11.14.01 - RC 1. Prep for release to public. Coordinating with rickzabel. - dB
  */
+
+/* global $, GM_info */
 
 var URCommentUSA_SouthCentralVersion = GM_info.script.version;
 var URCommentUSA_SouthCentralUpdateMessage = "yes"; // yes alert the user, no has a silent update.
@@ -53,7 +56,7 @@ function logWarning(message) { console.warn('SCR URC: ', message); }
 var parsedResults = [];
 var reminderMsgIdx, closedNotIdentifiedIdx;
 
-function setURCcommentsStaticVars() {
+function setURC_setCommentsStaticVars() {
     log("Setting static vars");
     //Custom Configuration: this allows your "reminder", and close as "not identified" messages to be named what ever you would like.
     //the position in the list that the reminder message is at. (starting at 0 counting titles, comments, and ur status). in my list this is "4 day Follow-Up"
@@ -243,14 +246,14 @@ function setURCcommentsStaticVars() {
 
     window.UrcommentsUSA_SouthCentralURC_USER_PROMPT[11] = "URComments - This will send reminders at the reminder days setting. This only happens when they are in your visible area. NOTE: when using this feature you should not leave any UR open unless you had a question that needed an answer from the wazer as this script will send those reminders."; //conformation message/ question
 }
-function setURCcommentsVars(parsedResults, reminderMsgIdx, closedNotIdentifiedIdx) {
+function scrURC_setURCommentsVars(parsedResults, reminderMsgIdx, closedNotIdentifiedIdx) {
     log("Setting variable vars and arrays");
     window.UrcommentsUSA_SouthCentralArray2 = parsedResults;
     window.UrcommentsUSA_SouthCentralReminderPosistion = reminderMsgIdx;
     window.UrcommentsUSA_SouthCentralCloseNotIdentifiedPosistion = closedNotIdentifiedIdx;
 }
 
-function loadCommentsSpreadsheetAsync() {
+function scrURC_loadCommentsSpreadsheetAsync() {
     log("Running Async");
     return new Promise((resolve, reject) => {
         $.get({
@@ -261,16 +264,16 @@ function loadCommentsSpreadsheetAsync() {
                     let cellValue = data.feed.entry[entryIdx].title.$t;
                     if (entryIdx === 0) {
                         if (URCommentUSA_SouthCentralVersion < cellValue) {
-                            result.error = GM_info.script.name + ' must be updated to at least version ' + cellValue + ' before the custom URC messages can be loaded.';
+                            result.error = GM_info.script.name + ' must be updated to at least version ' + cellValue + ' before the custom URComments can be loaded.';
                         }
                     } else if (entryIdx === 1) {
-                        // This is the index for the Reminder Message
+                        // This is the index for the Reminder Comment
                         reminderMsgIdx = eval(cellValue);
                     } else if (entryIdx === 2) {
-                        // This is the index for the Closed Not Identified message
+                        // This is the index for the Closed Not Identified Comment
                         closedNotIdentifiedIdx = eval(cellValue);
                     } else {
-                        // Process messages into array
+                        // Process rows into array
                         let splitRow = cellValue.split("|");
                         if(splitRow[0] != "REMOVED" && splitRow[1] != "REMOVED" && splitRow[2] != "REMOVED") {
                             splitRow.forEach(function(val){
@@ -283,23 +286,24 @@ function loadCommentsSpreadsheetAsync() {
                 resolve(result);
             },
             error: function() {
-                reject({message: 'An error occurred while loading the ' + GM_info.script.name + ' custom URC messages definition spreadsheet.'});
+                window.UrcommentsUSA_SouthCentralArray2 = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", "An error occurred while loading the " + GM_info.script.name + " custom URComments spreadsheet.", "", "Open" ];
+                reject({message: 'An error occurred while loading the ' + GM_info.script.name + ' custom URComments spreadsheet.'});
             }
         });
     });
 }
 
-function init() {
+function scrURC_init() {
     let t0 = performance.now();
-    setURCcommentsStaticVars();
-    loadCommentsSpreadsheetAsync().then(result => {
+    setURC_setCommentsStaticVars();
+    scrURC_loadCommentsSpreadsheetAsync().then(result => {
         if (result.error) {
             logError(result.error);
             window.UrcommentsUSA_SouthCentralArray2 = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", result.error, "", "Open" ];
             return;
         }
-        logDebug('Loaded ' + parsedResults.length/3 + ' messages and headers in ' + Math.round(performance.now() - t0) + ' ms.');
-        setURCcommentsVars(parsedResults, reminderMsgIdx, closedNotIdentifiedIdx);
+        logDebug('Loaded ' + parsedResults.length/3 + ' comments and headers in ' + Math.round(performance.now() - t0) + ' ms.');
+        scrURC_setURCommentsVars(parsedResults, reminderMsgIdx, closedNotIdentifiedIdx);
         log('Initialized.');
     }).catch(err => {
         let msg;
@@ -308,13 +312,14 @@ function init() {
         } else {
             msg = err;
         }
+        window.UrcommentsUSA_SouthCentralArray2 = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", msg, "", "Open" ];
         logError(msg);
     });
 }
-function bootstrap() {
+function scrURC_bootstrap() {
 //    if (W && W.loginManager && W.map && W.loginManager.user && W.model && W.model.states && W.model.states.getObjectArray().length) {
         log('Initializing...');
-        init();
+        scrURC_init();
 //    } else {
 //        log('Bootstrap failed. Trying again...');
 //        setTimeout(function () {
@@ -323,4 +328,4 @@ function bootstrap() {
 //    }
 }
 
-bootstrap();
+scrURC_bootstrap();
