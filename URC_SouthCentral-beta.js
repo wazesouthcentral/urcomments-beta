@@ -4,7 +4,7 @@
 // @namespace       https://greasyfork.org/en/scripts/374178-wme-urcomments-usa-southcentral-beta
 // @grant           none
 // @grant           GM_info
-// @version         2018.11.16.01
+// @version         2018.11.16.02
 // @match           https://editor-beta.waze.com/*editor*
 // @match           https://beta.waze.com/*editor*
 // @match           https://www.waze.com/*editor*
@@ -33,6 +33,7 @@
  * 2018.11.09.05 - let to var. - dB
  * 2018.11.14.01 - RC 1. Prep for release to public. Coordinating with rickzabel. - dB
  * 2018.11.16.01 - RC 2. New code for use with new spreadsheet layout. - dB
+ * 2018.11.16.02 - RC 2. New code for use with new spreadsheet layout. - dB
  */
 
 /* global $ */
@@ -228,7 +229,7 @@
         });
     }
 
-    async function scrURC_init() {
+    async function URC_CustomJSON_init() {
         let t0 = performance.now();
         var result = await loadCommentsSpreadsheetAsync().catch((err) => {
             let msg;
@@ -253,10 +254,10 @@
         }
     }
 
-    function scrURC_bootstrap() {
+    function URC_CustomJSON_bootstrap() {
         log('Initializing...');
-        scrURC_init();
+        URC_CustomJSON_init();
     }
 
-    scrURC_bootstrap();
+    URC_CustomJSON_bootstrap();
 })();
