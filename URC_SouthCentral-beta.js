@@ -4,7 +4,7 @@
 // @namespace       https://greasyfork.org/en/scripts/374178-wme-urcomments-usa-southcentral-beta
 // @grant           none
 // @grant           GM_info
-// @version         2018.11.16.02
+// @version         2018.11.19.01
 // @match           https://editor-beta.waze.com/*editor*
 // @match           https://beta.waze.com/*editor*
 // @match           https://www.waze.com/*editor*
@@ -34,6 +34,7 @@
  * 2018.11.14.01 - RC 1. Prep for release to public. Coordinating with rickzabel. - dB
  * 2018.11.16.01 - RC 2. New code for use with new spreadsheet layout. - dB
  * 2018.11.16.02 - RC 2. New code for use with new spreadsheet layout. - dB
+ * 2018.11.19.01 - RC 3. Separated spreadsheets to create new layout. - dB
  */
 
 /* global $ */
@@ -41,7 +42,7 @@
 
 (function() {
     var URComments_CustomJSON_ListName = "USA_SouthCentral"; // The name assigned by rickzabel which is used in the URComments main script.
-    var URComments_CustomJSON_JSON_URL = "https://spreadsheets.google.com/feeds/list/1O9zX369rcAqpn0B_n8jxDRUX76Q0thuKszcEsU1fKBM/8/public/values?alt=json";
+    var URComments_CustomJSON_JSON_URL = "https://spreadsheets.google.com/feeds/list/13pmsBn_euXzqoZd5YhLZrE_SwddW570gACPaOMEyBxo/7/public/values?alt=json";
     var URComments_CustomJSON_Name = GM_info.script.name;
     var URComments_CustomJSON_Version = GM_info.script.version;
     var URComments_CustomJSON_UpdateMessage = true; // true - alert the user, false - silent update.
@@ -63,10 +64,12 @@
     var parsedCommentsResults = [];
     var parsedDefaultURTypesResults = [];
     var parsedTextAndTooltipsResults = [];
+    var parsedUserPromptsResults = [];
     var reminderMsgIdx, closedNotIdentifiedIdx;
 
     function setURCommentsVars() {
-        return new Promise(resolve => {
+        return new Promise((resolve,reject) => {
+            let result = {error:null};
             logDebug("Setting vars");
             window['Urcomments' + URComments_CustomJSON_ListName + 'def_names'] = [];
             window['Urcomments' + URComments_CustomJSON_ListName + 'URC_Text'] = [];
@@ -74,59 +77,7 @@
             window['Urcomments' + URComments_CustomJSON_ListName + 'URC_USER_PROMPT'] = [];
             window['Urcomments' + URComments_CustomJSON_ListName + 'URC_URL'] = [];
             parsedDefaultURTypesResults.forEach(parsedResult => {
-                let index;
-                switch(parsedResult.index.toUpperCase()) {
-                    case 'INCORRECT TURN':
-                        index = "6";
-                        break;
-                    case "INCORRECT ADDRESS":
-                        index = "7";
-                        break;
-                    case "INCORRECT ROUTE":
-                        index = "8";
-                        break;
-                    case "MISSING ROUNDABOUT":
-                        index = "9";
-                        break;
-                    case "GENERAL ERROR":
-                        index = "10";
-                        break;
-                    case "TURN NOT ALLOWED":
-                        index = "11";
-                        break;
-                    case "INCORRECT JUNCTION":
-                        index = "12";
-                        break;
-                    case "MISSING BRIDGE OVERPASS":
-                        index = "13";
-                        break;
-                    case "WRONG DRIVING DIRECTION":
-                        index = "14";
-                        break;
-                    case "MISSING EXIT":
-                        index = "15";
-                        break;
-                    case "MISSING ROAD":
-                        index = "16";
-                        break;
-                    case "PLACES - MISSING LANDMARK":
-                        index = "18";
-                        break;
-                    case "BLOCKED ROAD":
-                        index = "19";
-                        break;
-                    case "MISSING STREET NAME":
-                        index = "21";
-                        break;
-                    case "INCORRECT STREET PREFIX OR SUFFIX":
-                        index = "22";
-                        break;
-                    case "SPEED LIMIT":
-                        index = "23";
-                        break;
-                    default:
-                }
-                window['Urcomments' + URComments_CustomJSON_ListName + 'def_names'][index] = parsedResult.text;
+                window['Urcomments' + URComments_CustomJSON_ListName + 'def_names'][parsedResult.index] = parsedResult.text;
             });
             parsedTextAndTooltipsResults.forEach(parsedResult => {
                 let type;
@@ -134,8 +85,6 @@
                     type = "Text_tooltip";
                 } else if (parsedResult.type === "URL") {
                     type = "URL";
-                } else if (parsedResult.type === "PROMPT") {
-                    type = "USER_PROMPT";
                 } else if (parsedResult.type === "REPLYINSTRUCTIONS") {
                     type = "ReplyInstructions";
                 } else {
@@ -145,13 +94,16 @@
                 if (type === "ReplyInstructions") {
                     window['Urcomments' + URComments_CustomJSON_ListName + type] = parsedResult.text;
                 } else {
-                    window['Urcomments' + URComments_CustomJSON_ListName + 'URC_' + type][parseInt(parsedResult.index)] = parsedResult.text;
+                    window['Urcomments' + URComments_CustomJSON_ListName + 'URC_' + type][parsedResult.index] = parsedResult.text;
                 }
+            });
+            parsedUserPromptsResults.forEach(parsedResult => {
+                window['Urcomments' + URComments_CustomJSON_ListName + 'URC_USER_PROMPT'][parsedResult.index] = parsedResult.text;
             });
             window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = parsedCommentsResults;
             window['Urcomments' + URComments_CustomJSON_ListName + 'ReminderPosistion'] = reminderMsgIdx;
             window['Urcomments' + URComments_CustomJSON_ListName + 'CloseNotIdentifiedPosistion'] = closedNotIdentifiedIdx;
-            resolve();
+            resolve(result);
         });
     }
 
@@ -164,51 +116,54 @@
                     let result = {error:null};
                     var defaultURTypeStart = false;
                     var textAndTooltipsStart = false;
-                    var endOfFile = false;
+                    var userPromptsStart = false;
                     for(let entryIdx = 0; entryIdx < data.feed.entry.length && !result.error; entryIdx++) {
                         let cellValue = data.feed.entry[entryIdx].title.$t;
                         if (cellValue === "Default_UR_Types_Start") {
                             defaultURTypeStart = true;
+                            continue;
                         } else if (cellValue === "Text_and_Tooltips_Start") {
                             defaultURTypeStart = false;
                             textAndTooltipsStart = true;
-                        } else if (cellValue === "End_of_File") {
-                            endOfFile = true;
-                        }
-                        if (endOfFile) {
                             continue;
-                        } else if (entryIdx === 0) {
+                        } else if (cellValue === "User_Prompts_Start") {
+                            defaultURTypeStart = false;
+                            textAndTooltipsStart = false;
+                            userPromptsStart = true;
+                            continue;
+                        } else if (cellValue === "End_of_File") {
+                            defaultURTypeStart = false;
+                            textAndTooltipsStart = false;
+                            userPromptsStart = false;
+                            continue;
+                        }
+                        if (entryIdx === 0) {
                             if (URComments_CustomJSON_Version < cellValue) {
                                 result.error = URComments_CustomJSON_Name + ' must be updated to at least version ' + cellValue + ' before the custom URComments for ' + URComments_CustomJSON_ListName + ' can be loaded.';
                             }
                         } else if (entryIdx === 1) {
                             // This is the index for the Reminder Comment
-                            reminderMsgIdx = eval(cellValue);
+                            reminderMsgIdx = parseInt(cellValue);
                         } else if (entryIdx === 2) {
                             // This is the index for the Closed Not Identified Comment
-                            closedNotIdentifiedIdx = eval(cellValue);
+                            closedNotIdentifiedIdx = parseInt(cellValue);
                         } else {
                             // Process rows into array
                             let splitRow = cellValue.split("|");
                             if (defaultURTypeStart) {
                                 parsedDefaultURTypesResults.push({'index':splitRow[0], 'text':splitRow[1]});
                             } else if (textAndTooltipsStart) {
-                                var index = splitRow[0].replace(/^.*(\d\d) - (.*)/i, '$1');
+                                var index = parseInt(splitRow[0].replace(/^.*(\d\d) - (.*)/i, '$1'));
                                 var type = splitRow[0].replace(/^.*(\d\d) - (.*)/i, '$2').toUpperCase();
-                                if ((splitRow[0] === "Text_and_Tooltips_Start") ||
-                                    (index === "03" && type === "TEXT") ||
-                                    (index === "04" && type === "TEXT") ||
-                                    (index === "05" && type === "TOOLTIP") ||
-                                    (index === "06" && type === "TOOLTIP") ||
-                                    (index === "07" && type === "TOOLTIP") ||
-                                    (index === "11" && type === "TEXT") ||
-                                    (index === "11" && type === "TOOLTIP") ||
-                                    (index === "23" && type === "TOOLTIP") ||
-                                    (index === "24" && type === "TOOLTIP")) {
+                                if (((index === "3" || index === "4" || index === "11") && type === "TEXT") ||
+                                    ((index === "5" || index === "6" || index === "7" || index === "11" || index === "23" || index === "24") && type === "TOOLTIP")) {
+                                    continue;
                                 } else {
                                     var text = splitRow[1];
                                     parsedTextAndTooltipsResults.push({'index':index, 'type':type, 'text':text});
                                 }
+                            } else if (userPromptsStart) {
+                                parsedUserPromptsResults.push({'index':splitRow[0], 'text':splitRow[1]});
                             } else {
                                 if(splitRow[0] != "REMOVED" && splitRow[1] != "REMOVED" && splitRow[2] != "REMOVED") {
                                     splitRow.forEach(function(val){
@@ -246,10 +201,26 @@
                 logError(result.error);
                 window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", result.error, "", "Open" ];
             } else {
-                setURCommentsVars().then(() => {
+               var setURCommentsVarResult = await setURCommentsVars().catch((err) => {
+                    let msg;
+                    if (err & err.message) {
+                        msg = err.message;
+                    } else {
+                        msg = err;
+                    }
+                    window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", msg, "", "Open" ];
+                    logError(msg);
+                }).then(() => {
                     logDebug('Loaded ' + parsedCommentsResults.length/3 + ' comments and headers and all text and tooltips in ' + Math.round(performance.now() - t0) + ' ms.');
                     log('Initialized.');
                 });
+                if (typeof setURCommentsVarResult !== 'undefined') {
+                    if (setURCommentsVarResult.error) {
+                        logError(setURCommentsVarResult.error);
+                        window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", setURCommentsVarResult.error, "", "Open" ];
+
+                    }
+                }
             }
         }
     }
