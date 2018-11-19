@@ -41,25 +41,25 @@
 /* global GM_info */
 
 (function() {
-    var URComments_CustomJSON_ListName = "USA_SouthCentral"; // The name assigned by rickzabel which is used in the URComments main script.
-    var URComments_CustomJSON_JSON_URL = "https://spreadsheets.google.com/feeds/list/13pmsBn_euXzqoZd5YhLZrE_SwddW570gACPaOMEyBxo/7/public/values?alt=json";
-    var URComments_CustomJSON_Name = GM_info.script.name;
-    var URComments_CustomJSON_Version = GM_info.script.version;
-    var URComments_CustomJSON_UpdateMessage = true; // true - alert the user, false - silent update.
-    var URComments_CustomJSON_VersionUpdateNotes = URComments_CustomJSON_Name + " has been updated to v" + URComments_CustomJSON_Version;
+    var URComments_CustomGSheets_ListName = "USA_SouthCentral"; // The name assigned by rickzabel which is used in the URComments main script.
+    var URComments_CustomGSheets_JSON_URL = "https://spreadsheets.google.com/feeds/list/13pmsBn_euXzqoZd5YhLZrE_SwddW570gACPaOMEyBxo/7/public/values?alt=json";
+    var URComments_CustomGSheets_Name = GM_info.script.name;
+    var URComments_CustomGSheets_Version = GM_info.script.version;
+    var URComments_CustomGSheets_UpdateMessage = true; // true - alert the user, false - silent update.
+    var URComments_CustomGSheets_VersionUpdateNotes = URComments_CustomGSheets_Name + " has been updated to v" + URComments_CustomGSheets_Version;
 
-    if (URComments_CustomJSON_UpdateMessage) {
-        if (localStorage.getItem(URComments_CustomJSON_Name + "_Version") !== URComments_CustomJSON_Version) {
-            alert(URComments_CustomJSON_VersionUpdateNotes);
-            localStorage.setItem(URComments_CustomJSON_Name + "_Version", URComments_CustomJSON_Version);
+    if (URComments_CustomGSheets_UpdateMessage) {
+        if (localStorage.getItem(URComments_CustomGSheets_Name + "_Version") !== URComments_CustomGSheets_Version) {
+            alert(URComments_CustomGSheets_VersionUpdateNotes);
+            localStorage.setItem(URComments_CustomGSheets_Name + "_Version", URComments_CustomGSheets_Version);
         }
     }
 
     const DEBUG = true;
-    function log(message) { console.log(URComments_CustomJSON_Name + ": ", message); }
-    function logError(message) { console.error(URComments_CustomJSON_Name + ": ", message); }
-    function logDebug(message) { if (DEBUG) console.debug(URComments_CustomJSON_Name + ": ", message); }
-    function logWarning(message) { console.warn(URComments_CustomJSON_Name + ": ", message); }
+    function log(message) { console.log(URComments_CustomGSheets_Name + ": ", message); }
+    function logError(message) { console.error(URComments_CustomGSheets_Name + ": ", message); }
+    function logDebug(message) { if (DEBUG) console.debug(URComments_CustomGSheets_Name + ": ", message); }
+    function logWarning(message) { console.warn(URComments_CustomGSheets_Name + ": ", message); }
 
     var parsedCommentsResults = [];
     var parsedDefaultURTypesResults = [];
@@ -71,13 +71,13 @@
         return new Promise((resolve,reject) => {
             let result = {error:null};
             logDebug("Setting vars");
-            window['Urcomments' + URComments_CustomJSON_ListName + 'def_names'] = [];
-            window['Urcomments' + URComments_CustomJSON_ListName + 'URC_Text'] = [];
-            window['Urcomments' + URComments_CustomJSON_ListName + 'URC_Text_tooltip'] = [];
-            window['Urcomments' + URComments_CustomJSON_ListName + 'URC_USER_PROMPT'] = [];
-            window['Urcomments' + URComments_CustomJSON_ListName + 'URC_URL'] = [];
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'def_names'] = [];
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'URC_Text'] = [];
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'URC_Text_tooltip'] = [];
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'URC_USER_PROMPT'] = [];
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'URC_URL'] = [];
             parsedDefaultURTypesResults.forEach(parsedResult => {
-                window['Urcomments' + URComments_CustomJSON_ListName + 'def_names'][parsedResult.index] = parsedResult.text;
+                window['Urcomments' + URComments_CustomGSheets_ListName + 'def_names'][parsedResult.index] = parsedResult.text;
             });
             parsedTextAndTooltipsResults.forEach(parsedResult => {
                 let type;
@@ -92,17 +92,17 @@
                 }
 
                 if (type === "ReplyInstructions") {
-                    window['Urcomments' + URComments_CustomJSON_ListName + type] = parsedResult.text;
+                    window['Urcomments' + URComments_CustomGSheets_ListName + type] = parsedResult.text;
                 } else {
-                    window['Urcomments' + URComments_CustomJSON_ListName + 'URC_' + type][parsedResult.index] = parsedResult.text;
+                    window['Urcomments' + URComments_CustomGSheets_ListName + 'URC_' + type][parsedResult.index] = parsedResult.text;
                 }
             });
             parsedUserPromptsResults.forEach(parsedResult => {
-                window['Urcomments' + URComments_CustomJSON_ListName + 'URC_USER_PROMPT'][parsedResult.index] = parsedResult.text;
+                window['Urcomments' + URComments_CustomGSheets_ListName + 'URC_USER_PROMPT'][parsedResult.index] = parsedResult.text;
             });
-            window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = parsedCommentsResults;
-            window['Urcomments' + URComments_CustomJSON_ListName + 'ReminderPosistion'] = reminderMsgIdx;
-            window['Urcomments' + URComments_CustomJSON_ListName + 'CloseNotIdentifiedPosistion'] = closedNotIdentifiedIdx;
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'Array2'] = parsedCommentsResults;
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'ReminderPosistion'] = reminderMsgIdx;
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'CloseNotIdentifiedPosistion'] = closedNotIdentifiedIdx;
             resolve(result);
         });
     }
@@ -111,7 +111,7 @@
         logDebug("Running Async");
         return new Promise((resolve, reject) => {
             $.get({
-                url: URComments_CustomJSON_JSON_URL,
+                url: URComments_CustomGSheets_JSON_URL,
                 success: function(data) {
                     let result = {error:null};
                     var defaultURTypeStart = false;
@@ -138,8 +138,8 @@
                             continue;
                         }
                         if (entryIdx === 0) {
-                            if (URComments_CustomJSON_Version < cellValue) {
-                                result.error = URComments_CustomJSON_Name + ' must be updated to at least version ' + cellValue + ' before the custom URComments for ' + URComments_CustomJSON_ListName + ' can be loaded.';
+                            if (URComments_CustomGSheets_Version < cellValue) {
+                                result.error = URComments_CustomGSheets_Name + ' must be updated to at least version ' + cellValue + ' before the custom URComments for ' + URComments_CustomGSheets_ListName + ' can be loaded.';
                             }
                         } else if (entryIdx === 1) {
                             // This is the index for the Reminder Comment
@@ -177,14 +177,14 @@
                     resolve(result);
                 },
                 error: function() {
-                    window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", "An error occurred while loading the " + URComments_CustomJSON_Name + " custom URComments spreadsheet.", "", "Open" ];
-                    reject({message: 'An error occurred while loading the ' + URComments_CustomJSON_Name + ' custom URComments spreadsheet.'});
+                    window['Urcomments' + URComments_CustomGSheets_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", "An error occurred while loading the " + URComments_CustomGSheets_Name + " custom URComments spreadsheet.", "", "Open" ];
+                    reject({message: 'An error occurred while loading the ' + URComments_CustomGSheets_Name + ' custom URComments spreadsheet.'});
                 }
             });
         });
     }
 
-    async function URC_CustomJSON_init() {
+    async function URC_CustomGSheets_init() {
         let t0 = performance.now();
         var result = await loadCommentsSpreadsheetAsync().catch((err) => {
             let msg;
@@ -193,13 +193,13 @@
             } else {
                 msg = err;
             }
-            window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", msg, "", "Open" ];
+            window['Urcomments' + URComments_CustomGSheets_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", msg, "", "Open" ];
             logError(msg);
         });
         if (typeof result !== 'undefined') {
             if (result.error) {
                 logError(result.error);
-                window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", result.error, "", "Open" ];
+                window['Urcomments' + URComments_CustomGSheets_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", result.error, "", "Open" ];
             } else {
                var setURCommentsVarResult = await setURCommentsVars().catch((err) => {
                     let msg;
@@ -208,7 +208,7 @@
                     } else {
                         msg = err;
                     }
-                    window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", msg, "", "Open" ];
+                    window['Urcomments' + URComments_CustomGSheets_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", msg, "", "Open" ];
                     logError(msg);
                 }).then(() => {
                     logDebug('Loaded ' + parsedCommentsResults.length/3 + ' comments and headers and all text and tooltips in ' + Math.round(performance.now() - t0) + ' ms.');
@@ -217,7 +217,7 @@
                 if (typeof setURCommentsVarResult !== 'undefined') {
                     if (setURCommentsVarResult.error) {
                         logError(setURCommentsVarResult.error);
-                        window['Urcomments' + URComments_CustomJSON_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", setURCommentsVarResult.error, "", "Open" ];
+                        window['Urcomments' + URComments_CustomGSheets_ListName + 'Array2'] = [ "<br><b><font color=red>ERROR</font></b>", "", "Open", setURCommentsVarResult.error, "", "Open" ];
 
                     }
                 }
@@ -225,10 +225,10 @@
         }
     }
 
-    function URC_CustomJSON_bootstrap() {
+    function URC_CustomGSheets_bootstrap() {
         log('Initializing...');
-        URC_CustomJSON_init();
+        URC_CustomGSheets_init();
     }
 
-    URC_CustomJSON_bootstrap();
+    URC_CustomGSheets_bootstrap();
 })();
